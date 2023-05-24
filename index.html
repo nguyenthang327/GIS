@@ -1,0 +1,264 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>
+        3D hiking map with line patterns | Sample | ArcGIS Maps SDK for JavaScript
+        4.26
+    </title>
+
+    <link href="https://js.arcgis.com/4.26/esri/themes/light/main.css" rel="stylesheet" type="text/css" />
+    <script src="https://js.arcgis.com/4.26/"></script>
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/SceneView",
+            "esri/geometry/Point",
+            "esri/symbols/SimpleMarkerSymbol",
+            "esri/symbols/SimpleLineSymbol",
+            "esri/symbols/TextSymbol",
+            "esri/Graphic",
+            "esri/layers/GraphicsLayer",
+            "esri/views/3d/externalRenderers",
+
+        ], function (Map, SceneView, Point, SimpleMarkerSymbol,SimpleLineSymbol, TextSymbol, Graphic, GraphicsLayer, externalRenderers) {
+            let view = new SceneView({
+                map: new Map({
+                    basemap: "hybrid",
+                    ground: "world-elevation",
+                }),
+                container: "viewDiv",
+                qualityProfile: "high",
+                camera: {
+                    position: {
+                        latitude: 21.0285, // Vĩ độ
+                        longitude: 105.8342, // Kinh độ
+                        z: 1500 // Độ cao
+                    },
+                    tilt: 45 // Góc nghiêng
+                }
+            });
+
+           // Tạo lớp đồ họa để hiển thị các điểm và đường
+    const graphicsLayer = new GraphicsLayer();
+    view.map.add(graphicsLayer);
+
+    // Tạo các điểm
+    const hoTayPoint = new Point({
+        latitude: 21.0588, // Vĩ độ Hồ Tây
+        longitude: 105.8367 // Kinh độ Hồ Tây
+    });
+
+    const hoanKiemPoint = new Point({
+        latitude: 21.0285, // Vĩ độ Hồ Hoàn Kiếm
+        longitude: 105.8525 // Kinh độ Hồ Hoàn Kiếm
+    });
+
+    const thanhXuanPoint = new Point({
+        latitude: 20.9950, // Vĩ độ Thanh Xuân
+        longitude: 105.8109 // Kinh độ Thanh Xuân
+    });
+
+    // Tạo biểu tượng cho nhãn
+    const labelSymbol = new TextSymbol({
+        color: [0, 0, 0], // Màu sắc chữ (mặc định là đen)
+        haloColor: [255, 255, 255], // Màu sắc halo (mặc định là trắng)
+        haloSize: "1px", // Kích thước halo (mặc định là 1 pixel)
+        font: { // Font chữ
+            size: 10, // Kích thước chữ
+            weight: "bold" // Độ đậm chữ (mặc định là bình thường)
+        }
+    });
+
+    // Tạo biểu tượng cho điểm
+    const markerSymbol = new SimpleMarkerSymbol({
+        color: [226, 119, 40], // Màu sắc của biểu tượng (ví dụ: cam)
+        size: 12, // Kích thước của biểu tượng
+        outline: {
+            color: [255, 255, 255], // Màu sắc viền của biểu tượng (mặc định là trắng)
+            width: 1 // Độ dày viền của biểu tượng (mặc định là 1 pixel)
+        }
+    });
+
+    // Tạo biểu tượng cho đường
+    const lineSymbol = new SimpleLineSymbol({
+        color: [255, 255, 0], // Màu sắc đường (vàng)
+        width: 2 // Độ dày đường
+    });
+
+    // Tạo các đối tượng đồ họa cho các điểm và thêm vào lớp đồ họa
+    const hoTayGraphic = new Graphic({
+        geometry: hoTayPoint,
+        symbol: markerSymbol,
+        attributes: {
+            latitude: hoTayPoint.latitude.toFixed(6),
+            longitude: hoTayPoint.longitude.toFixed(6),
+        }
+    });
+    graphicsLayer.add(hoTayGraphic);
+
+    const hoanKiemGraphic = new Graphic({
+        geometry: hoanKiemPoint,
+        symbol: markerSymbol,
+        attributes: {
+            latitude: hoanKiemPoint.latitude.toFixed(6),
+            longitude: hoanKiemPoint.longitude.toFixed(6)
+        }
+    });
+    graphicsLayer.add(hoanKiemGraphic);
+
+    const thanhXuanGraphic = new Graphic({
+        geometry: thanhXuanPoint,
+        symbol: markerSymbol,
+        attributes: {
+            latitude: thanhXuanPoint.latitude.toFixed(6),
+            longitude: thanhXuanPoint.longitude.toFixed(6)
+        }
+    });
+    graphicsLayer.add(thanhXuanGraphic);
+
+    // Tạo đường nối các điểm
+    const lineGeometry = {
+        type: "polyline",
+        paths: [
+            [hoTayPoint.longitude, hoTayPoint.latitude],
+            [hoanKiemPoint.longitude, hoanKiemPoint.latitude],
+            [thanhXuanPoint.longitude, thanhXuanPoint.latitude]
+        ]
+    };
+
+    const lineGraphic = new Graphic({
+        geometry: lineGeometry,
+        symbol: lineSymbol
+    });
+    graphicsLayer.add(lineGraphic);
+
+    // Hiển thị vĩ độ và kinh độ khi di chuột qua điểm
+    view.on("pointer-move", function (event) {
+        view.hitTest(event).then(function (response) {
+            if (response.results.length > 0) {
+                const graphic = response.results[0].graphic;
+                const attributes = graphic.attributes;
+                if (attributes && attributes.latitude && attributes.longitude) {
+                    const latitude = attributes.latitude;
+                    const longitude = attributes.longitude;
+                    // Hiển thị thông tin vĩ độ và kinh độ
+                    console.log("Vĩ độ:", latitude);
+                    console.log("Kinh độ:", longitude);
+                }
+            }
+        });
+    });
+
+    // Bổ sung bản vẽ của bạn vào trình vẽ ngoại vi
+    externalRenderers.add(view, myExternalRenderer)});
+    </script>
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        .container {
+            padding: 5px;
+            bottom: 16px;
+            width: auto;
+            min-width: 680px;
+            max-width: 99vw;
+            margin-bottom: 10px;
+            display: flex;
+            left: 50%;
+            transform: translate(-50%, 0);
+        }
+
+        .legend-section {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            padding: 10px;
+        }
+
+        .title {
+            margin-left: 15px;
+            margin-right: 15px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #dddddd;
+            padding-bottom: 4px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .legend-section-items {
+            display: flex;
+            flex-direction: row;
+            flex-grow: 1;
+            align-items: left;
+            text-align: left;
+        }
+
+        .legend-item {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            padding: 5px;
+            align-items: center;
+            text-align: center;
+        }
+
+        .symbol {
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+    <div id="legend" class="container esri-widget">
+        <div class="legend-section">
+            <div class="title">Hiking paths</div>
+            <div class="legend-section-items">
+                <div class="legend-item">
+                    <div class="symbol" id="easyHikingSymbol"></div>
+                    <div class="legend-item-title">Easy</div>
+                </div>
+                <div class="legend-item">
+                    <div class="symbol" id="mediumHikingSymbol"></div>
+                    <div class="legend-item-title">Medium</div>
+                </div>
+                <div class="legend-item">
+                    <div class="symbol" id="difficultHikingSymbol"></div>
+                    <div class="legend-item-title">Difficult</div>
+                </div>
+                <div class="legend-item">
+                    <div class="symbol" id="panoramaHikingSymbol"></div>
+                    <div class="legend-item-title">Panoramic</div>
+                </div>
+            </div>
+        </div>
+        <div class="legend-section">
+            <div class="title">Public transport</div>
+            <div class="legend-section-items">
+                <div class="legend-item">
+                    <div class="symbol" id="cableCarSymbol"></div>
+                    <div class="legend-item-title">Cable cars</div>
+                </div>
+                <div class="legend-item">
+                    <div class="symbol" id="winterServiceSymbol"></div>
+                    <div class="legend-item-title">Winter service</div>
+                </div>
+                <div class="legend-item">
+                    <div class="symbol" id="railwaySymbol"></div>
+                    <div class="legend-item-title">Railway</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
